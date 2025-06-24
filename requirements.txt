@@ -1,0 +1,10 @@
+Django==5.0
+djangorestframework==3.15
+mysqlclient==2.2.4
+celery==5.3.6
+redis==5.0.4
+pandas==2.2
+scikit-learn==1.5
+pyod==1.1
+python-decouple==3.8
+django-celery-beat==2.6.0

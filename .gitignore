@@ -1,0 +1,9 @@
+.git/
+venv/
+__pycache__/
+*.pyc
+.env
+a.txt
+a.py
+celerybeat-schedule
+migrations

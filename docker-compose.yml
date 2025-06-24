@@ -1,0 +1,38 @@
+services:
+  db:
+    image: mysql:8.0
+    env_file: .env
+    command: --default-authentication-plugin=mysql_native_password
+    ports: ["3306:3306"]
+    volumes: ["db_data:/var/lib/mysql"]
+
+  redis:
+    image: redis:7
+    ports: ["6379:6379"]
+    volumes: ["redis_data:/data"]
+
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    env_file: .env
+    volumes: [".:/app"]
+    ports: ["8000:8000"]
+    depends_on: [db, redis]
+
+  worker:
+    build: .
+    command: celery -A config worker -l info -Q default,celery
+    env_file: .env
+    volumes: [".:/app"]
+    depends_on: [db, redis]
+
+  beat:
+    build: .
+    command: celery -A config beat -l info
+    env_file: .env
+    volumes: [".:/app"]
+    depends_on: [db, redis]
+
+volumes:
+  db_data:
+  redis_data:
