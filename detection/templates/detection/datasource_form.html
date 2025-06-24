@@ -1,0 +1,10 @@
+{% load static %}
+<!doctype html>
+<title>Add data source</title>
+<h1>Add data source</h1>
+
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Save</button>
+</form>

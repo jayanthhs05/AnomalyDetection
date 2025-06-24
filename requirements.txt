@@ -8,3 +8,4 @@ scikit-learn==1.5
 pyod==1.1
 python-decouple==3.8
 django-celery-beat==2.6.0
+django_cryptography

@@ -1,11 +1,11 @@
-# ---------- build stage ----------
+
 FROM python:3.12 AS builder
 RUN apt-get update && \
     apt-get install -y --no-install-recommends build-essential pkg-config default-libmysqlclient-dev
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# ---------- runtime stage ----------
+
 FROM python:3.12-slim
 RUN apt-get update && apt-get install -y --no-install-recommends libmariadb3 && \
     rm -rf /var/lib/apt/lists/*
