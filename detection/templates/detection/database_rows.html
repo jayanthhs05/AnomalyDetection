@@ -5,14 +5,14 @@
 {% block content %}
 <h2>{{ datasource.alias }}</h2>
 
-<table class="table table-sm table-bordered">
+<table class="table table-hover align-middle">
   <thead>
     <tr>
-      <th>Timestamp</th>
-      <th>Series key</th>
-      <th>Processed?</th>
-      <th>Anomaly?</th>
-      <th>Payload&nbsp;(truncated)</th>
+      <th class="text-center">Timestamp</th>
+      <th class="text-center">Series key</th>
+      <th class="text-center">Processed?</th>
+      <th class="text-center">Anomaly?</th>
+      <th class="text-center">Payload&nbsp;(truncated)</th>
     </tr>
   </thead>
   <tbody>
@@ -24,9 +24,9 @@
             {{ row.timestamp|localtime }}
           </a>
         </td>
-        <td>{{ row.series_key }}</td>
-        <td>{% if row.has_score %}✓{% else %}&mdash;{% endif %}</td>
-        <td>{% if row.is_anom %}<strong>Yes</strong>{% else %}No{% endif %}</td>
+        <td class="text-center">{{ row.series_key }}</td>
+        <td class="text-center">{% if row.has_score %}✓{% else %}&mdash;{% endif %}</td>
+        <td class="text-center">{% if row.is_anom %}<strong>Yes</strong>{% else %}No{% endif %}</td>
         <td><code>{{ row.payload|truncatechars:100 }}</code></td>
       </tr>
     {% endfor %}

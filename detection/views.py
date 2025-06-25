@@ -10,7 +10,7 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Exists, OuterRef
 from django.utils.safestring import mark_safe
 import json
-
+from django.contrib import messages
 
 class AnomalyTable(LoginRequiredMixin, ListView):
     template_name = "detection/anomaly_list.html"
@@ -53,7 +53,12 @@ class DataSourceCreateView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.owner = self.request.user
+        messages.success(self.request, "Data-source saved successfully.")
         return super().form_valid(form)
+
+    def form_invalid(self, form):
+        messages.error(self.request, "Please fix the errors below.")
+        return super().form_invalid(form)
 
 
 class DatabaseList(LoginRequiredMixin, ListView):

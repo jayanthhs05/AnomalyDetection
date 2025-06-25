@@ -1,23 +1,30 @@
 {% extends "base.html" %}
 {% block title %}My Databases{% endblock %}
 {% block content %}
-<h2>Your data sources</h2>
-<table class="table table-hover">
-  <thead><tr><th>Alias</th><th>Engine</th><th>Status</th></tr></thead>
-  <tbody>
-    {% for ds in object_list %}
-      <tr>
-        <td><a href="{% url 'db-rows' ds.alias %}">{{ ds.alias }}</a></td>
-        <td>{{ ds.engine }}</td>
-        <td>
-          {% if ds.is_active %}<span class="text-success">Active</span>{% else %}
-          <span class="text-danger">Disabled</span>{% endif %}
-        </td>
-      </tr>
-    {% empty %}
-      <tr><td colspan="3">No data sources yet.</td></tr>
-    {% endfor %}
-  </tbody>
-</table>
-<a href="{% url 'datasource-create' %}" class="btn btn-primary">Add new source</a>
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-sm-6 col-sm-offset-3">
+      <table class="table table-hover">
+        <h2>Your Data Sources</h2>
+        <thead><tr><th>Alias</th><th>Engine</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for ds in object_list %}
+            <tr>
+              <td><a href="{% url 'db-rows' ds.alias %}">{{ ds.alias }}</a></td>
+              <td>{{ ds.engine }}</td>
+              <td>
+                {% if ds.is_active %}<span class="text-success">Active</span>{% else %}
+                <span class="text-danger">Disabled</span>{% endif %}
+              </td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="3">No data sources yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <a href="{% url 'datasource-create' %}" class="btn btn-primary">Add new source</a>
+      </form>
+    </div>
+  </div>
+</div>
 {% endblock %}

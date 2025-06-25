@@ -21,10 +21,10 @@
 <table class="table table-hover">
   <thead>
     <tr>
-      <th>Time</th>
-      <th>DB</th>
-      <th>Score</th>
-      <th>Payload&nbsp;(truncated)</th>
+      <th class="text-center">Time</th>
+      <th class="text-center">DB</th>
+      <th class="text-center">Score</th>
+      <th class="text-center">Payload&nbsp;(truncated)</th>
     </tr>
   </thead>
   <tbody>
@@ -36,8 +36,8 @@
             {{ row.raw.timestamp|localtime }}
           </a>
         </td>
-        <td>{{ row.raw.datasource_alias }}</td>
-        <td>{{ row.score|floatformat:3 }}</td>
+        <td class="text-center">{{ row.raw.datasource_alias }}</td>
+        <td class="text-center">{{ row.score|floatformat:3 }}</td>
         <td><code>{{ row.raw.payload|truncatechars:100 }}</code></td>
       </tr>
     {% empty %}
