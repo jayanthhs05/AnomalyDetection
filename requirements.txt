@@ -12,3 +12,4 @@ django_cryptography
 sqlalchemy
 django-crispy-forms
 crispy-bootstrap5
+pymysql

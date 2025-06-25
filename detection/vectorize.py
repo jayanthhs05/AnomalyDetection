@@ -6,6 +6,8 @@ from sklearn.compose import ColumnTransformer
 
 HASH_DIM = 2**16
 
+def _to_str(frame: pd.DataFrame) -> pd.DataFrame:
+    return frame.astype(str)
 
 def build_vectorizer(df: pd.DataFrame):
     df = df.copy()
@@ -22,7 +24,9 @@ def build_vectorizer(df: pd.DataFrame):
                 "cat",
                 Pipeline(
                     [
-                        ("to_str", FunctionTransformer(lambda x: x.astype(str))),
+                        ("to_str", FunctionTransformer(_to_str,
+                                               validate=False,
+                                               feature_names_out="one-to-one")),
                         ("hash", FeatureHasher(n_features=HASH_DIM, input_type="pair")),
                     ]
                 ),

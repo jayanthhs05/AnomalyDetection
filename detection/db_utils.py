@@ -28,6 +28,3 @@ def ensure_django_alias(ds):
         "PORT": str(ds.port),
         "OPTIONS": {"init_command": "SET sql_mode='STRICT_ALL_TABLES'"},
     }
-
-    connections.ensure_defaults(ds.alias)
-    connections.prepare_test_settings(ds.alias)

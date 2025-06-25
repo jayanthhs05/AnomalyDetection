@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import List
 
 import pandas as pd
+import numpy as np
 from celery import shared_task
 from django.conf import settings
 from django.db import IntegrityError
@@ -16,11 +17,18 @@ from .db_utils import ensure_django_alias, get_sqla_engine
 from .models import DataSource, DetectorConfig, GenericEvent, ScoredEvent
 from .vectorize import build_vectorizer
 from .utils_model import load, save, paths
+from django.utils import timezone
 
 
 _RETTRAIN_AFTER = timedelta(days=7)
 _MAX_SAMPLES = 20_000
 
+def _to_aware(ts):
+    if isinstance(ts, pd.Timestamp) and ts.tz is None:
+        ts = ts.tz_localize(timezone.get_current_timezone())
+    elif timezone.is_naive(ts):
+        ts = timezone.make_aware(ts, timezone.get_current_timezone())
+    return ts.to_pydatetime()
 
 def _series_key(row: pd.Series, series_cols: str) -> str:
 
@@ -48,27 +56,18 @@ def _fetch_new_rows(ds: DataSource) -> pd.DataFrame:
     )
     return pd.read_sql(q, eng, params={"last": last_seen})
 
-
 def _bulk_ingest(ds: DataSource, df: pd.DataFrame) -> None:
-
-    events: List[GenericEvent] = [
+    events = [
         GenericEvent(
-            datasource_alias=ds.alias,
-            timestamp=row[ds.ts_column],
-            series_key=_series_key(row, ds.series_cols),
-            payload=row.to_dict(),
+            datasource_alias = ds.alias,
+            timestamp        = _to_aware(row[ds.ts_column]),
+            series_key       = _series_key(row, ds.series_cols),
+            payload          = {k: _clean(v) for k, v in row.items()},
         )
         for _, row in df.iterrows()
     ]
-
-    try:
-        GenericEvent.objects.bulk_create(
-            events, batch_size=10_000, ignore_conflicts=True
-        )
-    except IntegrityError:
-
-        pass
-
+    GenericEvent.objects.bulk_create(events, batch_size=10_000,
+                                     ignore_conflicts=True)
 
 def _needs_retrain(mdl_path: Path) -> bool:
 
@@ -111,8 +110,9 @@ def _score_pending(ds: DataSource, cfg: DetectorConfig) -> None:
         X = vec.transform(features)
 
     scores = mdl.decision_function(X)
-    cutoff = mdl.offset_ + cfg.threshold
-    flags = scores < cutoff
+    q       = max(min(cfg.sensitivity, 0.5), 1e-4)
+    cutoff  = float(np.quantile(scores, q)) + cfg.threshold
+    flags   = scores < cutoff
 
     ScoredEvent.objects.bulk_create(
         [
@@ -136,3 +136,20 @@ def score_new_data() -> None:
 
     for ds in DataSource.objects.filter(is_active=True):
         ensure_django_alias(ds)
+
+        df = _fetch_new_rows(ds)
+        if not df.empty:
+            _bulk_ingest(ds, df)
+
+        _score_pending(ds, cfg)
+
+
+def _clean(v):
+    if isinstance(v, (pd.Timestamp, datetime)):
+        return v.isoformat()
+    if isinstance(v, (np.generic,)):
+        return v.item()
+    if pd.isna(v):
+        return None
+    return v
+

@@ -1,15 +1,33 @@
-import joblib, os
+import joblib, os, tempfile
 from pathlib import Path
 from django.conf import settings
+import pickle
 
 STORE = Path(settings.BASE_DIR, "model_store")
 STORE.mkdir(exist_ok=True)
 
-VEC_FILE  = STORE / "vectorizer.joblib"
-MOD_FILE  = STORE / "iforest.joblib"
+def _atomic_dump(obj, path: Path):
+    tmp_fd, tmp_name = tempfile.mkstemp(dir=path.parent, suffix=".tmp")
+    os.close(tmp_fd)
+    try:
+        joblib.dump(obj, tmp_name)
+        os.replace(tmp_name, path)
+    finally:
+        if os.path.exists(tmp_name):
+            os.remove(tmp_name)
 
-def save(obj, path): joblib.dump(obj, path)
-def load(path):      return joblib.load(path) if path.exists() else None
+def save(obj, path: Path):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    _atomic_dump(obj, path)
+
+def load(path: Path):
+    if not path.exists():
+        return None
+    try:
+        return joblib.load(path)
+    except (EOFError, pickle.UnpicklingError, ValueError):
+        path.unlink(missing_ok=True)
+        return None
 
 def paths(alias):
     STORE = Path(settings.BASE_DIR, "model_store", alias)

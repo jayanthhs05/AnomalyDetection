@@ -7,3 +7,5 @@ a.txt
 a.py
 celerybeat-schedule
 migrations
+*.sql
+model_store

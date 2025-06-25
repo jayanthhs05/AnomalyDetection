@@ -11,4 +11,5 @@ urlpatterns = [
     path("api/config/<int:pk>/", views.ConfigDetail.as_view()),
     path("datasources/new/", views.DataSourceCreateView.as_view(),
          name="datasource-create"), 
+    path("db/<slug:alias>/", views.DatabaseRows.as_view(), name="db-rows"), 
 ]
