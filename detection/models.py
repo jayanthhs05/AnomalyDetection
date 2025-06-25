@@ -1,4 +1,6 @@
 from django.db import models
+from .validators import validate_source
+from django.contrib.auth import get_user_model
 
 class GenericEvent(models.Model):
     id              = models.BigAutoField(primary_key=True)
@@ -6,8 +8,13 @@ class GenericEvent(models.Model):
     timestamp       = models.DateTimeField(db_index=True)
     series_key      = models.CharField(max_length=128, db_index=True, default="")
     payload         = models.JSONField()
+    class Meta:
+        unique_together = ("datasource_alias", "timestamp", "series_key")
 
 class DataSource(models.Model):
+    owner = models.ForeignKey(get_user_model(),
+                              on_delete=models.CASCADE,
+                              related_name="datasources")
     alias      = models.CharField(max_length=32, unique=True)
     engine     = models.CharField(max_length=48, default="mysql")
     host       = models.CharField(max_length=128, default="db")
@@ -27,6 +34,7 @@ class DataSource(models.Model):
     )
 
     def __str__(self): return self.alias
+    def clean(self): validate_source(self)
 
 class ScoredEvent(models.Model):
     raw      = models.OneToOneField(GenericEvent, on_delete=models.CASCADE, primary_key=True)

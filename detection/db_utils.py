@@ -5,7 +5,7 @@ from django.db import connections, DEFAULT_DB_ALIAS
 
 def get_sqla_engine(ds):
     url = sa.engine.URL.create(
-        drivername=f"{ds.engine}+pymysql",
+        drivername=f"mysql+pymysql",
         username=ds.user or settings.DATABASES[DEFAULT_DB_ALIAS]["USER"],
         password=ds.password or settings.DATABASES[DEFAULT_DB_ALIAS]["PASSWORD"],
         host=ds.host,
@@ -16,10 +16,6 @@ def get_sqla_engine(ds):
 
 
 def ensure_django_alias(ds):
-    """
-    Register / reuse a Django DB alias that points at the same server+schema.
-    Called once per DataSource before ORM code uses the alias.
-    """
     if ds.alias in settings.DATABASES:
         return
 

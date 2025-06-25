@@ -1,0 +1,31 @@
+<!-- templates/detection/anomaly_list.html -->
+{% extends "base.html" %}
+{% block content %}
+<h2>Anomalies</h2>
+<form method="get" class="mb-3">
+  <select name="datasource" class="form-select w-auto d-inline">
+    <option value="">All databases</option>
+    {% for ds in datasources %}
+      <option value="{{ ds.alias }}" {% if request.GET.datasource == ds.alias %}selected{% endif %}>
+        {{ ds.alias }}
+      </option>
+    {% endfor %}
+  </select>
+  <button class="btn btn-primary">Filter</button>
+</form>
+
+<table class="table table-hover">
+  <thead><tr><th>Time</th><th>DB</th><th>Score</th></tr></thead>
+  <tbody>
+    {% for row in anomalies %}
+      <tr>
+        <td>{{ row.raw.timestamp }}</td>
+        <td>{{ row.raw.datasource_alias }}</td>
+        <td>{{ row.score|floatformat:3 }}</td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="3">No anomalies.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

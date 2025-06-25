@@ -1,22 +1,33 @@
 import pandas as pd
-from sklearn.preprocessing import OneHotEncoder
-from sklearn.compose import ColumnTransformer
+from sklearn.feature_extraction import FeatureHasher
 from sklearn.pipeline import Pipeline
-from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import StandardScaler, FunctionTransformer
+from sklearn.compose import ColumnTransformer
+
+HASH_DIM = 2**16
+
 
 def build_vectorizer(df: pd.DataFrame):
-    num_cols = df.select_dtypes(include="number").columns
-    cat_cols = df.select_dtypes(exclude="number").columns
+    df = df.copy()
+    drop = ["timestamp"] + [c for c in df.columns if c.endswith("_id")]
+    df.drop(columns=[c for c in drop if c in df.columns], inplace=True)
+
+    num_cols = df.select_dtypes(include=["number", "bool"]).columns
+    cat_cols = [c for c in df.columns if c not in num_cols]
 
     return ColumnTransformer(
-        transformers=[
-            ("num", Pipeline([
-                ("impute", SimpleImputer(strategy="median"))
-            ]), num_cols),
-            ("cat", Pipeline([
-                ("impute", SimpleImputer(strategy="most_frequent")),
-                ("onehot", OneHotEncoder(handle_unknown="ignore")),
-            ]), cat_cols),
+        [
+            ("num", Pipeline([("scale", StandardScaler(with_mean=False))]), num_cols),
+            (
+                "cat",
+                Pipeline(
+                    [
+                        ("to_str", FunctionTransformer(lambda x: x.astype(str))),
+                        ("hash", FeatureHasher(n_features=HASH_DIM, input_type="pair")),
+                    ]
+                ),
+                cat_cols,
+            ),
         ],
         remainder="drop",
         sparse_threshold=0.3,

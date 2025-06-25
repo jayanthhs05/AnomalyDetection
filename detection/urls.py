@@ -7,7 +7,7 @@ router = DefaultRouter()
 router.register("datasources", views.DataSourceView, basename="datasource")
 urlpatterns = [
     path("api/", include(router.urls)),
-    path("api/anomalies/", views.AnomalyList.as_view()),
+    path("api/anomalies/", views.AnomalyTable.as_view(), name="anom-table"),
     path("api/config/<int:pk>/", views.ConfigDetail.as_view()),
     path("datasources/new/", views.DataSourceCreateView.as_view(),
          name="datasource-create"), 

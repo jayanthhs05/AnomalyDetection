@@ -9,3 +9,6 @@ pyod==1.1
 python-decouple==3.8
 django-celery-beat==2.6.0
 django_cryptography
+sqlalchemy
+django-crispy-forms
+crispy-bootstrap5
