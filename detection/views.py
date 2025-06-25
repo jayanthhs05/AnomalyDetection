@@ -4,10 +4,12 @@ from .serializers import ScoredSerializer, ConfigSerializer, DataSourceSerialize
 from django.urls import reverse_lazy
 from .forms import DataSourceForm
 from django.views.generic.edit import CreateView
-from django.views.generic import ListView
+from django.views.generic import ListView, DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404
 from django.db.models import Exists, OuterRef
+from django.utils.safestring import mark_safe
+import json
 
 
 class AnomalyTable(LoginRequiredMixin, ListView):
@@ -82,4 +84,21 @@ class DatabaseRows(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx["datasource"] = self.ds
+        return ctx
+
+class DatabaseRowDetail(LoginRequiredMixin, DetailView):
+    model = GenericEvent
+    template_name = "detection/database_row_detail.html"
+    pk_url_kwarg  = "pk"
+
+    def get_queryset(self):
+        return GenericEvent.objects.filter(
+            datasource_alias=self.kwargs["alias"]
+        )
+
+    def get_context_data(self, **kw):
+        ctx = super().get_context_data(**kw)
+        ctx["payload_pretty"] = mark_safe(
+            json.dumps(self.object.payload, indent=2)
+        )
         return ctx

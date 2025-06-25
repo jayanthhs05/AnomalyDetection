@@ -3,13 +3,22 @@ from . import views
 from rest_framework.routers import DefaultRouter
 from django.views.generic import CreateView
 from .forms import DataSourceForm
+
 router = DefaultRouter()
 router.register("datasources", views.DataSourceView, basename="datasource")
 urlpatterns = [
     path("api/", include(router.urls)),
     path("api/anomalies/", views.AnomalyTable.as_view(), name="anom-table"),
     path("api/config/<int:pk>/", views.ConfigDetail.as_view()),
-    path("datasources/new/", views.DataSourceCreateView.as_view(),
-         name="datasource-create"), 
-    path("db/<slug:alias>/", views.DatabaseRows.as_view(), name="db-rows"), 
+    path(
+        "datasources/new/",
+        views.DataSourceCreateView.as_view(),
+        name="datasource-create",
+    ),
+    path("db/<slug:alias>/", views.DatabaseRows.as_view(), name="db-rows"),
+    path(
+        "db/<slug:alias>/<int:pk>/",
+        views.DatabaseRowDetail.as_view(),
+        name="row-detail",
+    ),
 ]

@@ -1,6 +1,7 @@
 {% extends "base.html" %}
-{% load humanize %}
+{% load humanize tz %}
 {% block title %}{{ datasource.alias }} – rows{% endblock %}
+
 {% block content %}
 <h2>{{ datasource.alias }}</h2>
 
@@ -11,14 +12,18 @@
       <th>Series key</th>
       <th>Processed?</th>
       <th>Anomaly?</th>
-      <th>Payload (truncated)</th>
+      <th>Payload&nbsp;(truncated)</th>
     </tr>
   </thead>
   <tbody>
     {% for row in object_list %}
       <tr class="{% if row.is_anom %}table-danger{% endif %}">
-        {% load tz %}
-        <td>{{ row.timestamp|localtime }}</td>
+        <td>
+          <a class="text-decoration-none"
+             href="{% url 'row-detail' datasource.alias row.id %}">
+            {{ row.timestamp|localtime }}
+          </a>
+        </td>
         <td>{{ row.series_key }}</td>
         <td>{% if row.has_score %}✓{% else %}&mdash;{% endif %}</td>
         <td>{% if row.is_anom %}<strong>Yes</strong>{% else %}No{% endif %}</td>
@@ -27,8 +32,10 @@
     {% endfor %}
   </tbody>
 </table>
+
 {% if is_paginated %}
   {% include "pagination.html" %}
 {% endif %}
+
 <a href="{% url 'home' %}" class="btn btn-secondary">Back</a>
 {% endblock %}

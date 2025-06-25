@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load tz %}
+{% block title %}Row #{{ object.id }} – {{ object.datasource_alias }}{% endblock %}
+
+{% block content %}
+<h2>Event {{ object.id }}</h2>
+
+<table class="table table-bordered w-auto">
+  <tr><th>Datasource</th><td>{{ object.datasource_alias }}</td></tr>
+  <tr><th>Timestamp</th><td>{{ object.timestamp|localtime }}</td></tr>
+  <tr><th>Series&nbsp;key</th><td>{{ object.series_key }}</td></tr>
+</table>
+
+<h5 class="mt-4">Payload</h5>
+<pre class="bg-light p-3 rounded">{{ payload_pretty }}</pre>
+
+{% with se=object.scoredevent %}
+  {% if se %}
+    <h5 class="mt-4">Score</h5>
+    <ul>
+      <li>Score&nbsp;:&nbsp;{{ se.score|floatformat:4 }}</li>
+      <li>Anomaly&nbsp;:&nbsp;{% if se.is_anom %}Yes{% else %}No{% endif %}</li>
+      <li>Algorithm&nbsp;:&nbsp;{{ se.algo_ver }}</li>
+      <li>Scored&nbsp;at&nbsp;:&nbsp;{{ se.scored_at|localtime }}</li>
+    </ul>
+  {% endif %}
+{% endwith %}
+
+<a href="{% url 'db-rows' object.datasource_alias %}" class="btn btn-secondary">
+  Back to rows
+</a>
+{% endblock %}
