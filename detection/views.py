@@ -42,7 +42,7 @@ class DataSourceView(viewsets.ModelViewSet):
         return self.request.user.datasources.all()
 
     def perform_create(self, serializer):
-        serializer.save(owner=self.request.user)
+        ds = serializer.save(owner=self.request.user)
 
 
 class DataSourceCreateView(LoginRequiredMixin, CreateView):

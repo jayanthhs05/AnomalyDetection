@@ -1,6 +1,8 @@
 from django.db import models
 from .validators import validate_source
 from django.contrib.auth import get_user_model
+from django.db.models.signals import post_save
+from django.dispatch          import receiver
 
 
 class GenericEvent(models.Model):
@@ -54,10 +56,20 @@ class ScoredEvent(models.Model):
 
 
 class DetectorConfig(models.Model):
-    threshold = models.FloatField(default=0.0)
+    datasource = models.OneToOneField(
+        "DataSource",
+        on_delete=models.CASCADE,
+        related_name="config",
+    )
+    threshold   = models.FloatField(default=0.0)
     sensitivity = models.FloatField(default=0.02)
-    batch_size = models.PositiveIntegerField(default=5000)
-    enabled = models.BooleanField(default=True)
+    batch_size  = models.PositiveIntegerField(default=5000)
+    enabled     = models.BooleanField(default=True)
 
     def __str__(self):
-        return f"Config #{self.id}"
+        return f"Config for {self.datasource.alias}"
+
+@receiver(post_save, sender=DataSource)
+def _ensure_cfg(sender, instance, created, **kw):
+    if created and not hasattr(instance, "config"):
+        DetectorConfig.objects.create(datasource=instance)
