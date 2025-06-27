@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Anomaly Studio – AI-powered anomaly detection{% endblock %}
+
+{% block content %}
+<div class="py-5 text-center">
+  <h1 class="display-4 fw-bold">Find anomalies before they hurt the business</h1>
+  <p class="lead col-lg-8 mx-auto">
+    Anomaly Studio connects to your operational databases, learns normal
+    behaviour, and flags outliers in real time.
+  </p>
+  <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+    <a href="{% url 'register' %}" class="btn btn-primary btn-lg px-4">Get started free</a>
+    <a href="{% url 'login' %}"    class="btn btn-outline-secondary btn-lg px-4">Log in</a>
+  </div>
+</div>
+
+<section class="bg-light py-5">
+  <div class="container">
+    <h2 class="text-center mb-4">How it works</h2>
+    <ol class="list-group list-group-numbered shadow-sm">
+      <li class="list-group-item">Connect a data source</li>
+      <li class="list-group-item">Let the worker learn normal patterns</li>
+      <li class="list-group-item">Review anomalies in the dashboard or API</li>
+    </ol>
+  </div>
+</section>
+
+<section class="py-5 text-center">
+  <h2 class="mb-4">Ready to see anomalies disappear?</h2>
+  <a href="{% url 'register' %}" class="btn btn-success btn-lg">Create free account</a>
+</section>
+{% endblock %}

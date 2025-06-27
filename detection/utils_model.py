@@ -1,6 +1,7 @@
 import joblib, os, tempfile
 from pathlib import Path
 from django.conf import settings
+from django.utils.text import slugify
 import pickle
 
 STORE = Path(settings.BASE_DIR, "model_store")
@@ -30,6 +31,12 @@ def load(path: Path):
         return None
 
 def paths(alias):
-    STORE = Path(settings.BASE_DIR, "model_store", alias)
-    STORE.mkdir(parents=True, exist_ok=True)
-    return STORE / "vectorizer.joblib", STORE / "iforest.joblib"
+    safe = slugify(alias, allow_unicode=False)
+    root = Path(settings.BASE_DIR, "model_store", safe).resolve()
+    (root).mkdir(parents=True, exist_ok=True)
+
+    store_root = (Path(settings.BASE_DIR) / "model_store").resolve()
+    if store_root not in root.parents:
+        raise ValueError("Invalid alias – would escape model_store")
+
+    return root / "vectorizer.joblib", root / "iforest.joblib"

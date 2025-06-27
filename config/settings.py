@@ -1,17 +1,24 @@
 from decouple import config
 from pathlib import Path
+from celery.schedules import crontab
 
-from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+SECRET_KEY = config("DJANGO_SECRET_KEY")
+DEBUG = bool(config("DEBUG", default=0, cast=int))
+ALLOWED_HOSTS = config("DJANGO_ALLOWED_HOSTS", default="").split()
 
-SECRET_KEY = "django-insecure-k&(+f6t_k7bf_alsfrfphy&@%z_+urj16wdav%c)3)zm)()g3^"
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_BROWSER_XSS_FILTER = True
+    X_FRAME_OPTIONS = "DENY"
+    SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
 
-
-DEBUG = True
-
-ALLOWED_HOSTS = []
-
+STATIC_URL = "static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -37,6 +44,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -106,7 +114,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 CELERY_BROKER_URL = "redis://redis:6379/0"
 CELERY_RESULT_BACKEND = "redis://redis:6379/1"
-from celery.schedules import crontab
 
 CELERY_BEAT_SCHEDULE = {
     "score-every-5-min": {
@@ -131,7 +138,12 @@ REST_FRAMEWORK = {
 }
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
-CRISPY_TEMPLATE_PACK         = "bootstrap5"
+CRISPY_TEMPLATE_PACK = "bootstrap5"
 
-LOGIN_REDIRECT_URL  = "home"
+LOGIN_REDIRECT_URL = "dashboard"
 LOGOUT_REDIRECT_URL = "home"
+
+
+CELERY_TASK_ACKS_LATE = True
+CELERY_TASK_DEFAULT_RETRY_DELAY = 30
+CELERY_TASK_AUTORETRY_FOR = (Exception,)

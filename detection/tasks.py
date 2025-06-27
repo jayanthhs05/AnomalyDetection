@@ -45,14 +45,11 @@ def _fetch_new_rows(ds: DataSource) -> pd.DataFrame:
         Max("timestamp")
     ).get("timestamp__max") or datetime(1970, 1, 1)
 
-    q = text(
-        f"""
-        SELECT *
-          FROM ({ds.sql}) AS t
-         WHERE {ds.ts_column} > :last
-         ORDER BY {ds.ts_column}
-        """
-    )
+    q = text("""
+        SELECT * FROM ({sub}) AS t
+        WHERE {ts} > :last
+        ORDER BY {ts}
+    """.format(sub=ds.sql, ts=ds.ts_column))
     return pd.read_sql(q, eng, params={"last": last_seen})
 
 

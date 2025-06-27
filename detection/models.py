@@ -3,6 +3,9 @@ from .validators import validate_source
 from django.contrib.auth import get_user_model
 from django.db.models.signals import post_save
 from django.dispatch          import receiver
+from django.core.validators import RegexValidator
+from django.views.generic import TemplateView
+from django.shortcuts import redirect
 
 
 class GenericEvent(models.Model):
@@ -20,7 +23,11 @@ class DataSource(models.Model):
     owner = models.ForeignKey(
         get_user_model(), on_delete=models.CASCADE, related_name="datasources"
     )
-    alias = models.CharField(max_length=32, unique=True)
+    alias = models.CharField(
+        max_length=32,
+        unique=True,
+        validators=[RegexValidator(r"^[a-zA-Z0-9_-]+$", "Only letters, digits, _ or -")],
+    )
     engine = models.CharField(max_length=48, default="mysql")
     host = models.CharField(max_length=128, default="db")
     port = models.PositiveIntegerField(default=3306)
@@ -73,3 +80,12 @@ class DetectorConfig(models.Model):
 def _ensure_cfg(sender, instance, created, **kw):
     if created and not hasattr(instance, "config"):
         DetectorConfig.objects.create(datasource=instance)
+
+class LandingPage(TemplateView):
+    template_name = "landing.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return redirect("dashboard")
+        return super().dispatch(request, *args, **kwargs)
+

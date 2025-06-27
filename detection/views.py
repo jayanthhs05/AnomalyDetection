@@ -8,9 +8,11 @@ from django.views.generic import ListView, DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404
 from django.db.models import Exists, OuterRef
-from django.utils.safestring import mark_safe
+import html
 import json
 from django.contrib import messages
+from django.views.generic import TemplateView
+from django.shortcuts import redirect
 
 class AnomalyTable(LoginRequiredMixin, ListView):
     template_name = "detection/anomaly_list.html"
@@ -49,7 +51,7 @@ class DataSourceCreateView(LoginRequiredMixin, CreateView):
     model = DataSource
     form_class = DataSourceForm
     template_name = "detection/datasource_form.html"
-    success_url = reverse_lazy("datasource-create")
+    success_url = reverse_lazy("home")
 
     def form_valid(self, form):
         form.instance.owner = self.request.user
@@ -61,10 +63,10 @@ class DataSourceCreateView(LoginRequiredMixin, CreateView):
         return super().form_invalid(form)
 
 
-class DatabaseList(LoginRequiredMixin, ListView):
-    model = DataSource
+class Dashboard(LoginRequiredMixin, ListView):
+    model         = DataSource
     template_name = "detection/database_list.html"
-    paginate_by = 20
+    paginate_by   = 20
 
     def get_queryset(self):
         return self.request.user.datasources.all()
@@ -103,7 +105,13 @@ class DatabaseRowDetail(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kw):
         ctx = super().get_context_data(**kw)
-        ctx["payload_pretty"] = mark_safe(
-            json.dumps(self.object.payload, indent=2)
-        )
+        ctx["payload_pretty"] = html.escape(json.dumps(self.object.payload, indent=2))
         return ctx
+    
+class LandingPage(TemplateView):
+    template_name = "landing.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return redirect("dashboard")
+        return super().dispatch(request, *args, **kwargs)

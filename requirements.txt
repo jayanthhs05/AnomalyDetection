@@ -13,3 +13,5 @@ sqlalchemy
 django-crispy-forms
 crispy-bootstrap5
 pymysql
+whitenoise==6.6
+django-csp==3.7

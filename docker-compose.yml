@@ -20,17 +20,35 @@ services:
     volumes: [".:/app"]
     ports: ["8000:8000"]
     depends_on: [db, redis]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/healthz"]
+      interval: 30s
+      retries: 3
 
   worker:
     build: .
-    command: celery -A config worker -l info -Q default,celery
+    command:
+      - celery
+      - "--app=config"
+      - worker
+      - "--loglevel=info"
+      - "--queues=default,celery"
+      - "--concurrency=1"
+      - "--max-tasks-per-child=1000"
+      - "--autoscale=10,2"
     env_file: .env
     volumes: [".:/app"]
     depends_on: [db, redis]
 
+
   beat:
     build: .
-    command: celery -A config beat -l info
+    command:
+      - celery
+      - "--app=config"
+      - beat
+      - "--loglevel=info"
+      - "--scheduler=django_celery_beat.schedulers:DatabaseScheduler"
     env_file: .env
     volumes: [".:/app"]
     depends_on: [db, redis]
